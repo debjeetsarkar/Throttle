@@ -1,0 +1,20 @@
+{
+  "name": "thrust",
+  "version": "1.0.0",
+  "description": "A simple push notfication service for relaying your PNs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "push",
+    "notifications",
+    "express"
+  ],
+  "author": "Debjeet Sarkar",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  }
+}
