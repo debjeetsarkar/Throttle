@@ -1,17 +1,17 @@
 var messageOptionConstants = {
-    collapsekey : {
-        argName :"collapse_key"
+    collapsekey: {
+        argName: "collapse_key"
     },
-    priority : {
-        argName : "priority"
+    priority: {
+        argName: "priority"
     },
-    TTL : {
-        argName : "time_to_live"
+    TTL: {
+        argName: "time_to_live"
     },
-    restrictPackage : {
-        argName : "restricted_package_name"
+    restrictPackage: {
+        argName: "restricted_package_name"
     },
-    devRequest : {
-        argName : "dry_run"
+    devRequest: {
+        argName: "dry_run"
     }
 }
