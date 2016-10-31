@@ -17,37 +17,37 @@ var messageOptionConstants = require('../utils/message-options')
 function Message (options) {
 		this.message = {}
 
-		if(!options){
+		if(!options || _.isEmpty(options)){
 			this.message = setUpDefaults()  
 			return 
 	}else{
+
 		var messageOpts = {} 
 		if (options.type && !_.isUndefined(options.type)){
 			switch(options.type){
 				case 'data':
+					if(_.isUndefined(options.data)){
+						return
+					}
 					messageOpts.data = options.data
 				break;
 				case 'notification':
+					if(_.isUndefined(options.notification)){
+						return
+					}	
 					messageOpts.notification = options.notification
 				break;
 			}
+			delete options.type
+			this.message = processPayloadOptions(options,messageOpts)
+		}else{
+			this.message = processPayloadOptions(options)
 		}
-		 processPayloadOptions(messageOpts,function(err,result){
-		 	if(err){
-		 		console.log("Error while creating message payload", options)
-		 		return
-		 	}else{
-		 		this.message = result
-		 		return
-		 	}
-		 })
 	}
 }
 
-
-
-Message.prototype.addData = function(data){
-	if(_.has(this.message,'data'){
+Message.prototype.addData = function(data){	
+	if(_.has(this.message,'data')){
 		this.message.data = data	
 	}else{
 			this.message["data"] = data
@@ -55,39 +55,32 @@ Message.prototype.addData = function(data){
 }
 
 Message.prototype.addNotification = function(notification){
-		if(_.has(this.message,'notification'){
+		if(_.has(this.message,'notification')){
 		this.message.notification = notification	
 	}else{
 			this.message["notification"] = notification
 	}	
 }
 
-function processPayloadOptions(mappedOpts , cb)  {
-
-	async.eachOf(mappedOpts, function(val, key , callback){
-		if(! key === 'data' && ! key === 'notification' ){
-			if(messageOpts[key]){
-				mappedOpts[messageOpts[key].argName] = val
-				callback()
+function processPayloadOptions(mappedOpts,messageType)  {
+	Object.keys(mappedOpts).forEach(function(_key){
+		if(! _key === 'data' && ! _key === 'notification'){
+			if(messageOptionConstants[_key]){
+				mappedOpts[messageOptionConstants[_key].argName] = mappedOpts[_key]
 			}
-		}
-	},function(err){
-		if(err){
-		console.log("Error during mapping keys in payload for", mappedOpts)
-		cb(err, null)
-		}else{
-			var validationObject = payloadValidation.isValidMessageOptions(mappedOpts)
-			if(!validationObject.valid){
-				cb(err,null)
-			}else{
-				cb(null, mappedOpts)	
-			}
-			
 		}
 	})
+
+	if(messageType){
+		Object.keys(messageType).forEach(function(_key){
+			mappedOpts[_key] = messageType[_key]
+		})
+	}
+
+	return mappedOpts
 }
 
-function setUpDefaults() => {
+function setUpDefaults(){
 	var defaultPayload  = {
     "notification" : {
       "body" : "default payload!",

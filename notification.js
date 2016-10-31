@@ -5,14 +5,7 @@ var notification = {}
 
 notification.sendNotification = (request, response) => {
 
-	console.log("Inside notification controller", request.body)
-	var notificationContent = request.body.content
-	var notificationReceiver = request.body.receiver
-
-	notificationHandler.handleRequest({
-		content: notificationContent,
-		receiver: notificationReceiver
-	}, function(_err, _res) {
+	notificationHandler.handleRequest(request.body, function(_err, _res) {
 		if (_err) {
 			response.send(_err)
 		} else {

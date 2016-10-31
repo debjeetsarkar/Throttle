@@ -1,11 +1,13 @@
-var apnAgent = require('./apn')
 var fcmAgent = require('./fcm')
 
 function notificationHandler() {}
 
-notificationHandler.prototype.handleRequest = function(request, cb) {
+notificationHandler.prototype.handleRequest = function(paramObj, cb) {
 
-	console.log("Inside handlers", request)
+	//console.log("Inside handlers", paramObj)
+
+	var payload = new fcmAgent.payload(paramObj)
+	console.log("PAYLOAD GENERATED IS" ,payload)
 	cb(null, 'true')
 
 }
