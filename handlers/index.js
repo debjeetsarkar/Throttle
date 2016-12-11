@@ -6,7 +6,7 @@ function notificationHandler() {}
 notificationHandler.prototype.handleRequest = function(paramObj, cb) {
 
     var payload = new fcmAgent.payload(paramObj)
-
+    console.log("PAYLOAD GENERATED IS", payload)
     cb(null, 'true')
 
 }
