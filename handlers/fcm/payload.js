@@ -2,10 +2,10 @@
 
 This module is responsible for creating the payload to be sent to fcm. 
 It can accept :
-		
-			1. Data messages.
-			2. Notification Messages.
-			3. Combination of above two types.
+        
+            1. Data messages.
+            2. Notification Messages.
+            3. Combination of above two types.
 
 Returns a message object which is later consumed by the transmitter to transmit the payload to the fcm server. 
 
@@ -63,11 +63,11 @@ Message.prototype.addNotification = function(notification) {
 }
 
 function processPayloadOptions(mappedOpts, messageType) {
+
     Object.keys(mappedOpts).forEach(function(_key) {
-        if (!_key === 'data' && !_key === 'notification') {
-            if (messageOptionConstants[_key]) {
-                mappedOpts[messageOptionConstants[_key].argName] = mappedOpts[_key]
-            }
+        if (messageOptionConstants[_key]) {
+            mappedOpts[messageOptionConstants[_key].argName] = mappedOpts[_key]
+            delete mappedOpts[_key]
         }
     })
 
@@ -79,6 +79,7 @@ function processPayloadOptions(mappedOpts, messageType) {
 
     return mappedOpts
 }
+
 
 function setUpDefaults() {
     var defaultPayload = {

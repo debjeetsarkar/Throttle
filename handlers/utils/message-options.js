@@ -1,17 +1,19 @@
 var messageOptionConstants = {
-    collapsekey: {
+    COLLAPSE_KEY: {
         argName: "collapse_key"
     },
-    priority: {
+    PRIORITY: {
         argName: "priority"
     },
     TTL: {
         argName: "time_to_live"
     },
-    restrictPackage: {
+    RESTRICT_PACKAGE: {
         argName: "restricted_package_name"
     },
-    devRequest: {
+    DEV_REQUEST: {
         argName: "dry_run"
     }
 }
+
+module.exports = messageOptionConstants
