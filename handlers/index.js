@@ -1,9 +1,11 @@
 var fcmAgent = require('./fcm')
 var request = require('request')
+var randomstring = require("randomstring")
+var mongo = new require('../db/connection')()
 
 function notificationHandler() {}
 
-notificationHandler.prototype.handleRequest = function(paramObj, cb) {
+notificationHandler.prototype.send = function(paramObj, cb) {
     var payload = new fcmAgent.payload(paramObj)
     cb(null, 'true')
 
@@ -17,13 +19,13 @@ notificationHandler.prototype.registerClient = function(paramObj, cb) {
             cb(err, null)
         } else {
             console.log("Response from fcm after server api key validation", res.statusCode)
-            if (res.statusCode === '401') {
+            if (res.statusCode === 401) {
                 cb({
                     status: '401',
                     message: 'Invalid server api key'
                 }, null)
-            } else {
-                createClientHash(serverApiKey, cb)
+            } else if (res.statusCode === 200) {
+                createClientHash(paramObj, cb)
             }
 
         }
@@ -32,9 +34,33 @@ notificationHandler.prototype.registerClient = function(paramObj, cb) {
 
 
 
-function createClientHash(key, cb) {
-    //create a hash of the server api key and the user credentials in redis and return the hash.
+function createClientHash(obj, cb) {
+    obj.accessToken = obj.key + getRandomString()
+    insertUserDetails(obj, cb)
+}
 
+function insertUserDetails(obj, callback) {
+    mongo.insert({
+        "username": obj.username,
+        "key": obj.key,
+        "accessToken": obj.accessToken
+    }, insertCb)
+
+    function insertCb(err, result) {
+        if (err) {
+            callback(err, null)
+        } else {
+            callback(null, result)
+        }
+    }
+}
+
+function getRandomString() {
+    var randomStr = randomstring.generate({
+        length: 8,
+        charset: 'alphabetic'
+    })
+    return randomStr
 }
 
 function verifyServerApiKey(key, callback) {
@@ -43,11 +69,10 @@ function verifyServerApiKey(key, callback) {
             "Authorization": "key=" + key,
             "Content-Type": "application/json",
         },
-        uri: ' https://gcm-http.googleapis.com/gcm/send',
+        uri: 'https://fcm.googleapis.com/fcm/send',
         body: '{\"registration_ids\":[\"ABC\"]}',
         method: 'POST'
     }, function(err, res, body) {
-        console.log(err, res, body)
         if (err) {
             callback(err, null)
         } else {
