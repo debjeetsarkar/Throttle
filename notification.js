@@ -24,7 +24,6 @@ notification.sendNotification = (request, response) => {
             }
         })
     }
-
 }
 
 notification.register = (request, response) => {

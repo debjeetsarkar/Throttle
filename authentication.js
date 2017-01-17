@@ -9,8 +9,14 @@ authentication.authenticate = function(obj, done) {
         if (err) {
             done(err, null)
         } else if (result && result.status == 200) {
-            console.log("authenticated", result)
-            done(null, result.user)
+            if (result.user.username === obj.username) {
+                done(null, result.user)
+            } else {
+                done({
+                    status: 400,
+                    type: 'Not authorised'
+                }, null)
+            }
         }
     }
 }

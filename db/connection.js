@@ -14,15 +14,15 @@ function getMongoConnection() {
         return
     } else {
         mongoClient.connect(options.url, mongoConnectCallback)
+    }
 
-        function mongoConnectCallback(err, db) {
-            if (err) {
-                console.log("Error to connect mongo", err)
-                return
-            }
-            console.log("Connected to Mongodb")
-            mongoConnection = db
+    function mongoConnectCallback(err, db) {
+        if (err) {
+            console.log("Error to connect mongo", err)
+            return
         }
+        console.log("Connected to Mongodb")
+        mongoConnection = db
     }
 }
 

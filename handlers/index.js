@@ -1,7 +1,8 @@
 var fcmAgent = require('./fcm')
 var request = require('request')
 var randomstring = require("randomstring")
-var mongo = new require('../db/connection')()
+var mongoConnection = require('../db/connection')
+var mongo = new mongoConnection()
 
 function notificationHandler() {}
 
@@ -13,33 +14,45 @@ notificationHandler.prototype.send = function(paramObj, cb) {
 
 notificationHandler.prototype.registerClient = function(paramObj, cb) {
     var serverApiKey = paramObj.key
-    verifyServerApiKey(serverApiKey, function(err, res) {
-        if (err) {
-            console.log("Error during server api key validation", err)
-            cb(err, null)
-        } else {
-            console.log("Response from fcm after server api key validation", res.statusCode)
-            if (res.statusCode === 401) {
-                cb({
-                    status: '401',
-                    message: 'Invalid server api key'
-                }, null)
-            } else if (res.statusCode === 200) {
-                createClientHash(paramObj, cb)
-            }
 
+    isUsernameAvailable(paramObj.username, availabilityCb)
+
+    function availabilityCb(err, res) {
+        if (err) {
+            cb(err, null)
+            return
+        } else {
+            verifyServerApiKey(serverApiKey, verifyServerApiKeyCb)
         }
-    })
+
+        function verifyServerApiKeyCb(err, res) {
+            if (err) {
+                console.log("Error during server api key validation", err)
+                cb(err, null)
+            } else {
+                console.log("Response from fcm after server api key validation", res.statusCode)
+                if (res.statusCode === 401) {
+                    cb({
+                        status: '401',
+                        message: 'Invalid server api key'
+                    }, null)
+                } else if (res.statusCode === 200) {
+                    insertUserDetails(paramObj, cb)
+                }
+            }
+        }
+    }
 }
 
 
 
-function createClientHash(obj, cb) {
-    obj.accessToken = obj.key + getRandomString()
-    insertUserDetails(obj, cb)
+function createClientHash(obj) {
+    return obj.key + getRandomString()
 }
 
 function insertUserDetails(obj, callback) {
+
+    obj.accessToken = createClientHash(obj)
     mongo.insert({
         "username": obj.username,
         "key": obj.key,
@@ -51,6 +64,28 @@ function insertUserDetails(obj, callback) {
             callback(err, null)
         } else {
             callback(null, result)
+        }
+    }
+}
+
+
+function isUsernameAvailable(username, done) {
+
+    mongo.find({ "username": username }, findCallback)
+
+    function findCallback(err, result) {
+        if (err) {
+            if (err.status === 400) {
+                done(null, {
+                    status: 200,
+                    message: 'username available'
+                })
+            }
+        } else if (result && result.status == 200) {
+            done({
+                message: 'username not available',
+                status: 409
+            }, null)
         }
     }
 }
