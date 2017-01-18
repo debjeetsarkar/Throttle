@@ -21,7 +21,6 @@ function Message(options) {
         this.message = setUpDefaults()
         return
     } else {
-
         var messageOpts = {}
         if (options.type && !_.isUndefined(options.type)) {
             switch (options.type) {
@@ -61,6 +60,7 @@ Message.prototype.addNotification = function(notification) {
         this.message["notification"] = notification
     }
 }
+
 
 function processPayloadOptions(mappedOpts, messageType) {
 

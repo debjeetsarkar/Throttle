@@ -16,7 +16,10 @@ notification.sendNotification = (request, response) => {
             return
         }
 
-        notificationHandler.send(request.body, function(_err, _res) {
+        notificationHandler.send({
+            body: request.body,
+            key: res.key
+        }, function(_err, _res) {
             if (_err) {
                 response.send(_err)
             } else {

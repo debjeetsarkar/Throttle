@@ -1,15 +1,33 @@
 var fcmAgent = require('./fcm')
 var request = require('request')
+var transmitter = new fcmAgent.transmitter()
 var randomstring = require("randomstring")
 var mongoConnection = require('../db/connection')
+var request = require('request')
 var mongo = new mongoConnection()
 
 function notificationHandler() {}
 
 notificationHandler.prototype.send = function(paramObj, cb) {
-    var payload = new fcmAgent.payload(paramObj)
-    cb(null, 'true')
 
+    delete paramObj.body.username
+    delete paramObj.body.accessToken
+
+    var payload = new fcmAgent.payload(paramObj.body)
+    console.log("The payload generated is ", payload)
+    var key = paramObj.key
+    transmitter.transmit({
+        key: key,
+        payload: payload
+    }, function(error, response) {
+        if (error) {
+            //console.log("Error")
+            cb(error, null)
+        } else {
+            console.log("response",response.body)
+            cb(null, response)
+        }
+    })
 }
 
 notificationHandler.prototype.registerClient = function(paramObj, cb) {
