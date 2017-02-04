@@ -22,6 +22,7 @@ transmitter.prototype.transmit = function(obj,cb) {
 }
 
 var generateFcmRequest = function(obj) {
+    console.log("===transmit===",obj.key)
     return {
         headers: {
             "Authorization": "key=" + obj.key,

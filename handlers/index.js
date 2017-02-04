@@ -4,6 +4,8 @@ var transmitter = new fcmAgent.transmitter()
 var randomstring = require("randomstring")
 var mongoConnection = require('../db/connection')
 var request = require('request')
+var uuid = require('uuid')
+var _ = require('lodash')
 var mongo = new mongoConnection()
 
 function notificationHandler() {}
@@ -14,17 +16,27 @@ notificationHandler.prototype.send = function(paramObj, cb) {
     delete paramObj.body.accessToken
 
     var payload = new fcmAgent.payload(paramObj.body)
-    console.log("The payload generated is ", payload)
+    //console.log("The payload generated is ", payload)
     var key = paramObj.key
-    transmitter.transmit({
+
+    var transmissionObject = {
         key: key,
         payload: payload
-    }, function(error, response) {
+    }
+
+    if (doRetry(payload.message)) {
+        var retry = payload.message.retry
+        console.log("yo",retry)
+        transmissionObject.retry = retry
+        delete payload.message.retry
+    }
+    console.log("-----",transmissionObject)
+    transmitter.transmit(transmissionObject, function(error, response) {
         if (error) {
             //console.log("Error")
             cb(error, null)
         } else {
-            console.log("response",response.body)
+            console.log("response", response.body)
             cb(null, response)
         }
     })
@@ -33,7 +45,10 @@ notificationHandler.prototype.send = function(paramObj, cb) {
 notificationHandler.prototype.registerClient = function(paramObj, cb) {
     var serverApiKey = paramObj.key
 
-    isUsernameAvailable(paramObj.username, availabilityCb)
+    isUsernameAvailable({
+        username: paramObj.username,
+        key: serverApiKey
+    }, availabilityCb)
 
     function availabilityCb(err, res) {
         if (err) {
@@ -65,31 +80,33 @@ notificationHandler.prototype.registerClient = function(paramObj, cb) {
 
 
 function createClientHash(obj) {
-    return obj.key + getRandomString()
+    return  getRandomString() + uuid.v4()
 }
 
 function insertUserDetails(obj, callback) {
 
     obj.accessToken = createClientHash(obj)
-    mongo.insert({
+    var userObj = {
         "username": obj.username,
         "key": obj.key,
         "accessToken": obj.accessToken
-    }, insertCb)
+    }
+
+    mongo.insert(userObj, insertCb)
 
     function insertCb(err, result) {
         if (err) {
             callback(err, null)
         } else {
-            callback(null, result)
+            callback(null, userObj)
         }
     }
 }
 
 
-function isUsernameAvailable(username, done) {
+function isUsernameAvailable(obj, done) {
 
-    mongo.find({ "username": username }, findCallback)
+    mongo.find({ "username": obj.username, "key": obj.key }, findCallback)
 
     function findCallback(err, result) {
         if (err) {
@@ -107,6 +124,11 @@ function isUsernameAvailable(username, done) {
         }
     }
 }
+
+function doRetry(request) {
+    return !_.isUndefined(request.retry)
+}
+
 
 function getRandomString() {
     var randomStr = randomstring.generate({

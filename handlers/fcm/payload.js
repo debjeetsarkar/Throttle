@@ -61,6 +61,18 @@ Message.prototype.addNotification = function(notification) {
     }
 }
 
+function cleanUndefinedData(obj) {
+    var cleanObject = {}
+    Object.keys(obj).forEach(processEachKey)
+
+    function processEachKey(_key) {
+        if (!_.isUndefined(_key)) {
+            cleanObject._key = obj._key
+        }
+    }
+    return cleanObject
+}
+
 
 function processPayloadOptions(mappedOpts, messageType) {
 
